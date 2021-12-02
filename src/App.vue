@@ -1,18 +1,21 @@
 <template>
   <div id="app">
     <div class="wrapper">
-      <BaseTable />
+      <SuperTable />
+      <!-- <BaseTable /> -->
     </div>
   </div>
 </template>
 
 <script>
-import BaseTable from './components/base-table';
+import SuperTable from './components/super-table';
+// import BaseTable from './components/base-table';
 
 export default {
   name: 'App',
   components: {
-    BaseTable,
+    SuperTable,
+    // BaseTable
   }
 }
 </script>
@@ -34,7 +37,7 @@ export default {
 
 <style scope>
   .wrapper {
-    width: 1200px;
+    width: 1300px;
     margin-left: 50px;
     text-align: left;
   }

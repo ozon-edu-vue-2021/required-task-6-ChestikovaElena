@@ -10,8 +10,13 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { Directive } from "@/directives/detect-viewport";
+import VueVirtualScroller from "vue-virtual-scroller";
+
+import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
 
 library.add(faSortAmountUp, faSortAmountDown, faSort, faFilter, faTimes);
+
+Vue.use(VueVirtualScroller);
 
 Vue.component("font-awesome-icon", FontAwesomeIcon);
 Vue.directive("detect-viewport", Directive);

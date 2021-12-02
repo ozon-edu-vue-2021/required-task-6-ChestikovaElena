@@ -41,12 +41,6 @@ import Column from './column';
 
 export default {
   name: 'BaseTable',
-  // props: {
-  //   feature: {
-  //     type: String,
-  //     default: 'paging'
-  //   }
-  // },
   components: {
     Column,
     Table,
@@ -63,22 +57,6 @@ export default {
       getPageFunction: this.getPage,
     };
   },
-  // computed: {
-  //   staticPaging() {
-  //     if (this.feature === 'paging') {
-  //       return true
-  //     } else {
-  //       return false
-  //     }
-  //   },
-  //   getPageFunction() {
-  //     if (this.feature === 'paging') {
-  //       return this.getPage
-  //     } else {
-  //       return this.infGetPage
-  //     }
-  //   },
-  // },
   methods: {
     async getPage(number) {
       const res = await fetch(`https://jsonplaceholder.typicode.com/comments?postId=${number}`);

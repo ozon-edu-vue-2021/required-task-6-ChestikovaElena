@@ -19,79 +19,97 @@ export default {
       type: Number,
       default: 0
     },
-    staticPaging: {
-      type: Boolean,
-      default: true
+    feature: {
+      type: String,
+      default: "default"
     }
   },
   data() {
     return {
-      sortProp: '',
-      sortDirection: '',
-      filterProp: '',
-      filterText: '',
+      sortProps: {},
+      filterProps: {},
     }
   },
   computed: {
     sortedRows() {
       let res = this.rows;
 
-      if (this.sortProp === '' && this.filterText === '') {
-        res = this.rows;
-      }
-      
-      if (this.sortProp !== '') {
-        res = orderBy(this.rows, [this.sortProp], [this.sortDirection]);
-      }
-      
-      if(this.filterText !== '') {
+      if (this.feature === 'default') {
+        if (Object.keys(this.sortProps).length === 0
+          && Object.keys(this.filterProps).length === 0) {
+          res = this.rows;
+        }
         
-        res = res.filter(row => String(row[this.filterProp]).search(this.filterText) > -1)
+        if (Object.keys(this.sortProps).length) {
+          const props = Object.keys(this.sortProps);
+          const sortDirection = Object.keys(this.sortProps).map(key => this.sortProps[key]);
+          res = orderBy(this.rows, props, sortDirection);
+        }
+        
+        if(Object.keys(this.filterProps).length !== 0) {
+          Object.keys(this.filterProps).map((filterPropName) => 
+            res = res.filter(row => String(row[filterPropName]).search(this.filterProps[filterPropName]) > -1)
+          );
+        }
       }
+      
       return res;
     }
   },
   methods: {
     toggleSort(prop) {
-      this.sortProp = prop;
-      this.sortDirection = (this.sortDirection === 'desc' || !this.sortDirection) ? 'asc' : 'desc';
+      const sortDirection = (this.sortProps[prop] === 'desc' || !this.sortProps[prop]) ? 'asc' : 'desc';
+      this.$set(this.sortProps, prop, sortDirection);
     },
-    openFilterTooltip(prop = '') {
-      this.filterProp = prop;
-      this.filterText = '';
+    closeSort(prop) {
+      this.$delete(this.sortProps, prop);
     },
-    setFilterText(e) {
-      this.filterText = e.target.value;
+    closeFilterTooltip(prop = '') {
+      this.$delete(this.filterProps, prop);
+    },
+    setFilterText( prop, e ) {
+      const value = e.target.value;
+      this.$set(this.filterProps, prop, value);
     },
     renderHead(h, columnsOptions) {
-      const {$style, sortProp, sortDirection, filterProp, filterText } = this;
+      const {$style, sortProps, feature, filterProps, closeFilterTooltip } = this;
       
       return columnsOptions.map((column) => {
         const renderedTitle = column.scopedSlots.title ? column.scopedSlots.title() : column.title;
         let sortIcon = 'sort';
         
-        if (sortProp === column.prop) {
-          sortIcon = sortDirection === 'asc' ? 'sort-amount-down' : 'sort-amount-up';
+        if (Object.keys(sortProps).includes(column.prop)) {
+          sortIcon = sortProps[column.prop] === 'asc' ? 'sort-amount-down' : 'sort-amount-up';
         }
         
         return (
           <th key={column.prop} class={$style.headerCell}>
             <div class={$style.headerCellContent}>
               <span>{renderedTitle}</span>
-              <font-awesome-icon
-                class={$style.sortIcon}
-                icon={sortIcon}
-                on={{ click: () => this.toggleSort(column.prop) }}
-              />
+              <div
+                class={$style.sortIconWrapper}
+                v-show={feature === 'default'}
+              >
+                <font-awesome-icon
+                  class={$style.sortIcon}
+                  icon={sortIcon}
+                  on={{ click: () => this.toggleSort(column.prop) }}
+                />
+                <font-awesome-icon
+                  v-show={sortIcon !== 'sort'}
+                  icon="times"
+                  class={$style.closeIcon}
+                  on={{ click: () => this.closeSort(column.prop) }}
+                />
+              </div>
+              
               <FilterDropdown
+                v-show={feature === 'default'}
                 columnProp={column.prop}
-                shown={column.prop === filterProp}
-                filterText={filterText}
-
+                filterText={filterProps[column.prop]}
+                closeFilterTooltip={closeFilterTooltip}
                 on={{
-                  openFilterTooltip: () => this.openFilterTooltip(column.prop),
-                  closeFilterTooltip: () => this.openFilterTooltip(),
-                  setFilterText: this.setFilterText,
+                  setFilterText: () => this.setFilterText(column.prop, event),
                 }}
               />
             </div>
@@ -105,7 +123,7 @@ export default {
           <tr key={row.id || index}>
             {...this.renderColumns(h, row, columnsOptions)}
           </tr>
-        );
+        )
       });
     },
     renderColumns(h, row, columnsOptions) {
@@ -146,7 +164,7 @@ export default {
     }
   },
   render(h) {
-    const { $style, totalPages, currentPage, staticPaging, $listeners } = this;
+    const { $style, feature, totalPages, currentPage, $listeners } = this;
     const { getPage } = $listeners;
     const columnsOptions = this.getColumnOptions();
     const columnsHead = this.renderHead(h, columnsOptions);
@@ -156,12 +174,16 @@ export default {
       <div>
         <table class={$style.table}>
           <thead>{...columnsHead}</thead>
-          <tbody>{...rows}</tbody>
+          <tbody>
+            {...rows}
+          </tbody>
         </table>
 
-        {staticPaging
+        {feature === 'paging' 
           ? <TablePaginator totalPages={totalPages} currentPage={currentPage} on={{ getPage: getPage }} />
-          : this.renderInfPager()
+          : feature === 'scroll'
+            ? this.renderInfPager()
+            : null
         }
       </div>
     );
@@ -188,11 +210,25 @@ export default {
     display: flex;
     align-items: center;
   }
+  .sortIconWrapper {
+    position: relative;
+    width: 32px;
+  }
   .sortIcon {
     margin-left: 8px;
     margin-right: 8px;
   }
   .sortIcon:hover {
+    cursor: pointer;
+  }
+  .closeIcon {
+    width: 12px;
+    height: 12px;
+    position: absolute;
+    top: -10px;
+    right: 0px;
+  }
+  .closeIcon:hover {
     cursor: pointer;
   }
   .infPager {
