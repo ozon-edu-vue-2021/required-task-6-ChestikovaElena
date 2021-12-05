@@ -17,6 +17,18 @@
         <input type="radio" value="virtualScroll" name="feature" @change="checkedHandler">
         Использовать виртуальный скролл
       </label>
+      <label v-if="feature === 'virtualScroll'">
+        Тип компонента скролла:
+        <select
+          value="component"
+          v-model="component"
+          @change="componentHandler"
+        >
+          <option value="StatefulLi">Обычный компонент</option>
+          <option value="FunctionalLi">Функциональный компонент</option>
+        </select>
+        <button @click="rendered = true">Нарисовать таблицу</button>
+      </label>
     </div>
     <div v-if="feature !== 'virtualScroll'">
       <Table
@@ -43,7 +55,10 @@
       </Table>
     </div>
     <div v-else>
-      <VirtalScrollWrapper />
+      <VirtalScrollWrapper
+        :componentType="component"
+        :rendered="rendered"
+      />
     </div>
   </div>
 </template>
@@ -69,6 +84,8 @@ export default {
       rows: [],
       currentPage: 1,
       getPageFunction: this.getPage,
+      component: "FunctionalLi",
+      rendered: false,
     };
   },
   methods: {
@@ -106,6 +123,9 @@ export default {
         this.getAllPage();
         this.feature = 'default';
       }
+    },
+    componentHandler() {
+      this.rendered = false;
     }
   }
 };

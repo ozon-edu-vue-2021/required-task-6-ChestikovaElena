@@ -1,5 +1,8 @@
 <template>
-  <div class="table-container">
+  <div
+    v-if="rendered"
+    class="table-container"
+  >
     <div class="header-container">
       <div class="row header">
         <div
@@ -17,6 +20,7 @@
     </div>
 
     <RecycleScroller
+      v-if="componentType === 'StatefulLi'"
       class="body"
       :items="rows"
       :item-size="63"
@@ -24,20 +28,38 @@
       key-field="id"
       v-slot="{ item }"
     >
-      <Item :item="item" />
+      <StatefulLi :item="item" />
+    </RecycleScroller>
+    <RecycleScroller
+      v-else
+      class="body"
+      :items="rows"
+      :item-size="63"
+      :buffer="2000"
+      key-field="id"
+      v-slot="{ item }"
+    >
+      <FunctionalLi :item="item" />
     </RecycleScroller>
   </div>
 </template>
 
 <script>
-import Item from './item';
+import StatefulLi from './statfulLi';
+import FunctionalLi from './functionalLi';
 
 export default {
   name: 'VirtalScrollWrapper',
-  components: { Item },
-  async created() {
-    const res = await fetch(`https://jsonplaceholder.typicode.com/comments`);
-    this.rows = await res.json();
+  components: { StatefulLi, FunctionalLi },
+  props: {
+    componentType: {
+      type: String,
+      default: "StatefulLi"
+    },
+    rendered: {
+      type: Boolean,
+      default: false
+    }
   },
   data() {
     return {
@@ -63,8 +85,20 @@ export default {
           label: "Name",
           width: "620px",
         },
-      ]
+      ],
     };
+  },
+  async created() {
+    const res = await fetch(`https://jsonplaceholder.typicode.com/comments`);
+    this.rows = await res.json();
+  },
+  beforeUpdate() {
+    console.time();
+  },
+
+  updated() {
+    console.log(`Time for render ${this.componentType}: `);
+    console.timeEnd();
   },
 };
 </script>

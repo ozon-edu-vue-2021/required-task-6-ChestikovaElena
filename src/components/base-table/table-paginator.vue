@@ -117,7 +117,6 @@ export default {
     align-items: center;
     margin-left: 8px;
   }
-
   .control {
     width: 28px;
     height: 28px;
@@ -126,15 +125,12 @@ export default {
     align-items: center;
     justify-content: center;
   }
-
   .control:last-of-type {
     margin-right: 0;
   }
-
   .control:hover {
     cursor: pointer;
   }
-
   .control.active {
     color: cornflowerblue;
     background: ivory;
@@ -144,7 +140,6 @@ export default {
     align-items: center;
     justify-content: center;
   }
-
   .control.disabled {
     color: lightgrey;
     cursor: auto;
